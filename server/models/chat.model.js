@@ -8,7 +8,8 @@ const chatSchema = new Schema({
 	users: [{
 		uuid: String,
 		firstName: String,
-		lastName: String
+		lastName: String,
+		ppURL: String
 	}],
 	active: { type: Boolean, default: true}
 }, { timestamps: true });

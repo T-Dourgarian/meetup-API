@@ -48,6 +48,9 @@ router.get('/', authenticateUser, async(req,res) => {
 						],
 						'as': 'messages'
 					  }
+				},
+				{
+					$sort : { createdAt: -1 }
 				}
 			]
 		)
@@ -94,12 +97,14 @@ router.post('/:eventUuid', authenticateUser, async(req,res) => {
 					{
 						uuid: event.createdBy.uuid,
 						firstName: event.createdBy.firstName,
-						lastName: event.createdBy.lastName
+						lastName: event.createdBy.lastName,
+						ppURL: event.createdBy.ppURL
 					},
 					{
 						uuid: req.user.uuid, 
 						firstName: req.user.firstName, 
-						lastName: req.user.lastName
+						lastName: req.user.lastName,
+						ppURL: req.user.ppURL
 					}
 				]
 			})
@@ -124,23 +129,26 @@ router.post('/:eventUuid', authenticateUser, async(req,res) => {
 });
 
 
-router.put('/deactivate/:chatUuid', authenticateUser, async(req,res) => {
+router.put('/deactivate/', authenticateUser, async(req,res) => {
     try {
 
-		console.log('in deactivate chat');
+		console.log('in delete chats');
 		
-		const { chatUuid } = req.params;
+		const { chatUuids } = req.body;
+
 		
-		await chatDb.updateOne({
-			uuid: chatUuid,
+		await chatDb.updateMany({
+			uuid: { $in: chatUuids},
 		},
 		{
 			active: false
 		});
 
-		const chat = await chatDb.findOne({ uuid: chatUuid });
+		let chats = await chatDb.find({ uuid: { $in: chatUuids} });
 
-		await eventDb.updateOne({ uuid: chat.eventUuid }, 
+		const eventUuids = chats.map(chat => chat.eventUuid);
+
+		await eventDb.updateMany({ uuid: { $in: eventUuids }}, 
 			{
 				$pull : { currentlyMessaging: { uuid: req.user.uuid }, currentlyMessagingUuids: req.user.uuid }
 			}
