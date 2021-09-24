@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const axios = require("axios");
 const uuid = require('uuid');
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 
 
 const userDb = require('../models/user.model');
@@ -28,13 +29,16 @@ router.post('/',  async(req,res) => {
 
 		const { email, password } = req.body;
 
-		const user = await userDb.findOne({ username: email });
-
-		console.log('user', user)
+		const user = await userDb.findOne({ username: email.toLowerCase() });
 
 
+		if (!user) {
+			return res.json({ error: 'Invalid username or password' })
+		}
 
-		if ( user && user.password === password) {
+
+
+		if ( await bcrypt.compare(password, user.password) ) {
 
 			const ppURL = user.ppURL ? user.ppURL : '';
 
@@ -67,10 +71,14 @@ router.post('/signup', async (req,res) => {
 	try {
 		const { username, password, firstName, lastName } = req.body;
 
+
+
+		const hashedPassword = await bcrypt.hash(password, 10);
+
 		const user = await userDb.create({
 			uuid:uuid.v1(),
-			username,
-			password,
+			username: username.toLowerCase(),
+			password: hashedPassword,
 			firstName,
 			lastName,
 		});
@@ -78,7 +86,7 @@ router.post('/signup', async (req,res) => {
 
 		const accessToken = jwt.sign({
 			uuid:user.uuid, 
-			username,
+			username: username.toLowerCase(),
 			firstName,
 			lastName,
 		},  process.env.ACCESS_TOKEN_SECRET);

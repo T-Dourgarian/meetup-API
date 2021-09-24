@@ -18,7 +18,12 @@ const eventDb = require('./models/event.model');
 
 
 // const run = async () => {
-// 	await eventDb.updateMany({}, {deleted: false})
+// 	const events = await eventDb.find({});
+
+
+// 	eventDb.createIndex({ "point": "2dsphere" })
+
+// 	const events = await eventDb.find({coordinates:{ $near : { $maxDistance: 5000, $geometry : {type: 'Point', coordinates: [-9.34783, 52.93361050000001]}}}})
 // }
 // run() 
 

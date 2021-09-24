@@ -81,6 +81,30 @@ router.put('/pp',  [authenticateUser, upload], async (req,res) => {
 	}
 })
 
+router.put('/update', authenticateUser, async (req,res) => {
+	try {
+
+		console.log('in update user')
+
+		const { user } = req.body;
+
+		await userDb.updateOne({ uuid: user.uuid},
+			{
+				bio: user.bio,
+				age: user.age,
+				gender: user.gender,
+				occupation: user.occupation
+			}	
+		);
+
+		res.sendStatus(200)
+
+	} catch(error) {
+		console.log(error)
+		res.sendStatus(400)
+	}
+})
+
 router.get('/pp/image/:uuid', async (req, res) => {
 	try {
 

@@ -81,7 +81,7 @@ router.post('/:eventUuid', authenticateUser, async(req,res) => {
 
 		// if chat already existed but has been deactivated
 		if (chat) {
-		
+			
 			await chatDb.updateOne({ uuid: chat.uuid},
 				{
 					active: true

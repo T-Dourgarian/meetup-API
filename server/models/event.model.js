@@ -9,6 +9,7 @@ const { Schema } = mongoose;
 // 	lastName: { type: String },
 // })
 
+
 const createdBySchema = new Schema({
 	uuid: String,
 	firstName:String,
@@ -18,11 +19,10 @@ const createdBySchema = new Schema({
 
 const eventSchema = new Schema({
 	uuid: { type: String },
-	name: { type: String, default: null },
-	date: { type: Date, default: null },
-	description: { type: String, default: null },
-	location: { type: String, default: null },
-	createdBy: { type: String, default: null },
+	name: { type: String, default: '' },
+	date: { type: Date, default: '' },
+	description: { type: String, default: '' },
+	location: { type: String, default: '' },
 	accepted: [{
 		uuid: { type: String },
 		firstName: { type: String },
@@ -40,8 +40,8 @@ const eventSchema = new Schema({
 	createdBy: createdBySchema,
 	mapUrl: String,
 	coordinates: {
-		lat: Number,
-		lng: Number
+		type: { type: String, default: 'Point'},
+		coordinates: [Number]
 	},
 	hidden: { type: Boolean, default: false },
 	deleted: { type: Boolean, default: false },

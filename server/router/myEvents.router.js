@@ -59,6 +59,29 @@ router.put('/hide/:eventUuid', authenticateUser, async (req, res) => {
 	}
 })
 
+router.put('/withdraw/:eventUuid', authenticateUser, async(req, res) => {
+	try {
+		console.log('in withdraw attendance')
+
+		const { eventUuid } = req.params;
+
+		await eventDb.updateOne({ uuid: eventUuid }, ({
+			$pull: { 
+				accepted: { uuid: req.user.uuid }, 
+				acceptedUuids: req.user.uuid,
+				currentlyMessaging: { uuid: req.user.uuid }, 
+				currentlyMessagingUuids: req.user.uuid
+			}
+		}));
+
+		res.sendStatus(200);
+
+	} catch (error) {
+		console.log(error);
+		res.sendStatus(400);
+	}
+})
+
 router.delete('/delete/:eventUuid', authenticateUser, async (req, res) => {
 	try {
 		console.log('in delete event');
