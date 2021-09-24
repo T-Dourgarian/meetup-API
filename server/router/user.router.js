@@ -52,27 +52,61 @@ router.put('/pp',  [authenticateUser, upload], async (req,res) => {
 		const params = {
 			Bucket: process.env.AWS_BUCKET_NAME,
 			Key: req.user.uuid,
-			Body: req.file.buffer
 		};
 
-		s3.upload(params, async (error, data) => {
-			if(error){
-				res.status(500).json(error)
-			}
+		const user = await userDb.findOne({ uuid: req.user.uuid });
 
-			await userDb.updateOne({ uuid: req.user.uuid }, 
-				{
-					ppURL: `/api/user/pp/image/${req.user.uuid}`
-				}	
-			);
+		if (user && user.ppURL) {
+			s3.deleteObject(params, async(error, data) => {
+				if (error) {
+					console.log(error)
+					return res.status(500).json(error)
+				}
 
-			const response = await eventDb.updateMany({ 'createdBy.uuid': req.user.uuid }, { 'createdBy.ppURL': `/api/user/pp/image/${req.user.uuid}` });
-
-			console.log('response', response)
+				params.Body = req.file.buffer
 	
-			res.status(200).json({ ppURL: `/api/user/pp/image/${req.user.uuid}` });
+				s3.upload(params, async (error, data) => {
+					if(error){
+						res.status(500).json(error)
+					}
+		
+					await userDb.updateOne({ uuid: req.user.uuid }, 
+						{
+							ppURL: `/api/user/pp/image/${req.user.uuid}`
+						}	
+					);
+		
+					const response = await eventDb.updateMany({ 'createdBy.uuid': req.user.uuid }, { 'createdBy.ppURL': `/api/user/pp/image/${req.user.uuid}` });
+			
+					return res.status(200).json({ ppURL: `/api/user/pp/image/${req.user.uuid}` });
+		
+				});
 
-		});
+			})
+		} else {
+
+			params.Body = req.file.buffer
+
+			s3.upload(params, async (error, data) => {
+				if(error){
+					res.status(500).json(error)
+				}
+	
+				await userDb.updateOne({ uuid: req.user.uuid }, 
+					{
+						ppURL: `/api/user/pp/image/${req.user.uuid}`
+					}	
+				);
+	
+				const response = await eventDb.updateMany({ 'createdBy.uuid': req.user.uuid }, { 'createdBy.ppURL': `/api/user/pp/image/${req.user.uuid}` });
+		
+				return res.status(200).json({ ppURL: `/api/user/pp/image/${req.user.uuid}` });
+	
+			});
+		}
+
+
+
 
 
 	} catch(error) {
